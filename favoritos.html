@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Favoritos - Devocional</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: { 'sacred-beige': '#F9F6F0', 'earth-brown': '#4A3B32', 'wine-blood': '#6B1D2F', 'subtle-gold': '#D4AF37' },
+                    fontFamily: { serif: ['Cormorant Garamond', 'serif'], sans: ['Inter', 'sans-serif'] }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-sacred-beige text-earth-brown font-sans min-h-screen flex flex-col justify-between">
+
+    <header class="border-b border-earth-brown/10 py-6 px-4 bg-sacred-beige/80 sticky top-0 z-50 backdrop-blur-sm">
+        <div class="max-w-4xl mx-auto flex justify-between items-center">
+            <a href="index.html" class="flex items-center gap-2 font-serif text-xl font-semibold text-wine-blood">
+                <svg class="w-5 h-7 fill-current" viewBox="0 0 24 24"><path d="M11 2h2v6h6v2h-6v12h-2v-12h-6v-2h6z"/></svg>
+                <span>Devocional</span>
+            </a>
+            <nav class="flex gap-6 text-sm tracking-wider uppercase font-medium">
+                <a href="index.html" class="hover:text-wine-blood transition-colors pb-1">Início</a>
+                <a href="categorias.html" class="hover:text-wine-blood transition-colors pb-1">Categorias</a>
+                <a href="favoritos.html" class="text-wine-blood border-b border-wine-blood pb-1">Favoritos</a>
+            </nav>
+        </div>
+    </header>
+
+    <main class="max-w-4xl w-full mx-auto px-6 py-12 flex-grow">
+        <h1 class="font-serif text-4xl mb-2 font-light">Versículos Guardados</h1>
+        <div class="h-[1px] w-12 bg-subtle-gold mb-10"></div>
+        <div id="lista-favoritos" class="space-y-8"></div>
+    </main>
+
+    <footer class="py-8 text-center text-xs text-earth-brown/40 border-t border-earth-brown/5">
+        Guardei a tua palavra no meu coração.
+    </footer>
+
+    <script>
+        async function carregarFavoritos() {
+            const res = await fetch('versiculos.json');
+            const db = await res.json();
+            const favs = JSON.parse(localStorage.getItem('fav-devocional') || '[]');
+            const container = document.getElementById('lista-favoritos');
+
+            const filtrados = db.filter(v => favs.includes(v.id));
+
+            if(filtrados.length === 0) {
+                container.innerHTML = `<p class="italic text-earth-brown/50">Nenhum versículo favoritado ainda. Toque no coração ao ler um tema.</p>`;
+                return;
+            }
+
+            container.innerHTML = filtrados.map(v => `
+                <div class="border-b border-earth-brown/5 pb-6" id="card-${v.id}">
+                    <p class="font-serif text-xl italic leading-relaxed text-earth-brown/90">"${v.texto}"</p>
+                    <div class="flex justify-between items-center mt-3">
+                        <span class="text-xs font-semibold tracking-wider text-wine-blood uppercase">${v.referencia} <span class="text-earth-brown/30 font-normal lowercase ml-2">(${v.categoria})</span></span>
+                        <button onclick="removerFavorito(${v.id})" class="text-wine-blood hover:text-wine-blood/60 transition-colors text-xs font-medium uppercase tracking-widest">
+                            Remover
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function removerFavorito(id) {
+            let favs = JSON.parse(localStorage.getItem('fav-devocional') || '[]');
+            favs = favs.filter(fId => fId !== id);
+            localStorage.setItem('fav-devocional', JSON.stringify(favs));
+            
+            const elemento = document.getElementById(`card-${id}`);
+            if(elemento) elemento.remove();
+            
+            if(favs.length === 0) {
+                document.getElementById('lista-favoritos').innerHTML = `<p class="italic text-earth-brown/50">Nenhum versículo favoritado ainda. Toque no coração ao ler um tema.</p>`;
+            }
+        }
+
+        window.addEventListener('DOMContentLoaded', carregarFavoritos);
+    </script>
+</body>
+</html>

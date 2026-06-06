@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Categorias - Devocional</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: { 'sacred-beige': '#F9F6F0', 'earth-brown': '#4A3B32', 'wine-blood': '#6B1D2F', 'subtle-gold': '#D4AF37' },
+                    fontFamily: { serif: ['Cormorant Garamond', 'serif'], sans: ['Inter', 'sans-serif'] }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-sacred-beige text-earth-brown font-sans min-h-screen flex flex-col justify-between">
+
+    <header class="border-b border-earth-brown/10 py-6 px-4 bg-sacred-beige/80 sticky top-0 z-50 backdrop-blur-sm">
+        <div class="max-w-4xl mx-auto flex justify-between items-center">
+            <a href="index.html" class="flex items-center gap-2 font-serif text-xl font-semibold text-wine-blood">
+                <svg class="w-5 h-7 fill-current" viewBox="0 0 24 24"><path d="M11 2h2v6h6v2h-6v12h-2v-12h-6v-2h6z"/></svg>
+                <span>Devocional</span>
+            </a>
+            <nav class="flex gap-6 text-sm tracking-wider uppercase font-medium">
+                <a href="index.html" class="hover:text-wine-blood transition-colors pb-1">Início</a>
+                <a href="categorias.html" class="text-wine-blood border-b border-wine-blood pb-1">Categorias</a>
+                <a href="favoritos.html" class="hover:text-wine-blood transition-colors pb-1">Favoritos</a>
+            </nav>
+        </div>
+    </header>
+
+    <main class="max-w-4xl w-full mx-auto px-6 py-12 flex-grow">
+        <div id="secao-grid">
+            <h1 class="font-serif text-4xl text-center mb-12 tracking-wide font-light">Temas do Novo Testamento</h1>
+            <div class="grid grid-cols-2 md:grid-cols-5 gap-4" id="grid-categorias">
+                </div>
+        </div>
+
+        <div id="secao-lista" class="hidden">
+            <button onclick="voltarParaGrid()" class="mb-8 flex items-center gap-2 text-xs tracking-widest uppercase text-wine-blood font-medium">
+                ← Voltar aos temas
+            </button>
+            <h2 id="titulo-categoria" class="font-serif text-4xl mb-2 capitalize font-light">Tema</h2>
+            <div class="h-[1px] w-12 bg-subtle-gold mb-10"></div>
+            <div id="lista-versiculos" class="space-y-8"></div>
+        </div>
+    </main>
+
+    <footer class="py-8 text-center text-xs text-earth-brown/40 border-t border-earth-brown/5">
+        Medite na Sua Palavra de dia e de noite.
+    </footer>
+
+    <script>
+        const temas = ["Fé", "Amor", "Perdão", "Esperança", "Oração", "Salvação", "Sabedoria", "Paz", "Coragem", "Gratidão"];
+        let db = [];
+
+        async function carregarDB() {
+            const res = await fetch('versiculos.json');
+            db = await res.json();
+            montarGrid();
+        }
+
+        function montarGrid() {
+            const grid = document.getElementById('grid-categorias');
+            grid.innerHTML = temas.map(tema => `
+                <button onclick="abrirCategoria('${tema}')" class="border border-earth-brown/10 hover:border-wine-blood/30 hover:bg-white bg-transparent p-6 text-center transition-all duration-300 group flex flex-col justify-center items-center h-32 rounded-sm">
+                    <span class="font-serif text-lg tracking-wide group-hover:text-wine-blood transition-colors">${tema}</span>
+                </button>
+            `).join('');
+        }
+
+        function abrirCategoria(tema) {
+            document.getElementById('secao-grid').classList.add('hidden');
+            document.getElementById('secao-lista').classList.remove('hidden');
+            document.getElementById('titulo-categoria').innerText = tema;
+
+            const filtrados = db.filter(v => v.categoria.toLowerCase() === tema.toLowerCase());
+            const lista = document.getElementById('lista-versiculos');
+
+            if(filtrados.length === 0) {
+                lista.innerHTML = `<p class="italic text-earth-brown/60">Mais versículos desta categoria serão adicionados em breve.</p>`;
+                return;
+            }
+
+            let favs = JSON.parse(localStorage.getItem('fav-devocional') || '[]');
+
+            lista.innerHTML = filtrados.map(v => {
+                const eFavorito = favs.includes(v.id);
+                return `
+                    <div class="border-b border-earth-brown/5 pb-6">
+                        <p class="font-serif text-xl italic leading-relaxed text-earth-brown/90">"${v.texto}"</p>
+                        <div class="flex justify-between items-center mt-3">
+                            <span class="text-xs font-semibold tracking-wider text-wine-blood uppercase">${v.referencia}</span>
+                            <div class="flex gap-4">
+                                <button onclick="alternarFavorito(${v.id}, this)" class="text-earth-brown/40 hover:text-wine-blood transition-colors">
+                                    <svg class="w-5 h-5 ${eFavorito ? 'fill-wine-blood text-wine-blood' : 'fill-none text-current'}" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                                    </svg>
+                                </button>
+                                <button onclick="compartilhar('${v.texto} — ${v.referencia}')" class="text-earth-brown/40 hover:text-earth-brown transition-colors">
+                                    <svg class="w-5 h-5 fill-none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M8.684 10.742l4.57 2.286M14.122 6.936l-4.29 2.143M21 12a3 3 0 11-6 0 3 3 0 016 0zm-7-6a3 3 0 11-6 0 3 3 0 016 0zm-7 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function voltarParaGrid() {
+            document.getElementById('secao-grid').classList.remove('hidden');
+            document.getElementById('secao-lista').classList.add('hidden');
+        }
+
+        function alternarFavorito(id, btn) {
+            let favs = JSON.parse(localStorage.getItem('fav-devocional') || '[]');
+            const svg = btn.querySelector('svg');
+            if(favs.includes(id)) {
+                favs = favs.filter(fId => fId !== id);
+                svg.classList.remove('fill-wine-blood', 'text-wine-blood');
+                svg.classList.add('fill-none');
+            } else {
+                favs.push(id);
+                svg.classList.add('fill-wine-blood', 'text-wine-blood');
+                svg.classList.remove('fill-none');
+            }
+            localStorage.setItem('fav-devocional', JSON.stringify(favs));
+        }
+
+        function compartilhar(conteudo) {
+            if(navigator.share) {
+                navigator.share({ title: 'Palavra Devocional', text: conteudo });
+            } else {
+                navigator.clipboard.writeText(conteudo);
+                alert('Copiado para a área de transferência com sucesso.');
+            }
+        }
+
+        window.addEventListener('DOMContentLoaded', carregarDB);
+    </script>
+</body>
+</html>

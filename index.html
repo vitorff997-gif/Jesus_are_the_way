@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Devocional Coração Contrito</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'sacred-beige': '#F9F6F0',
+                        'earth-brown': '#4A3B32',
+                        'wine-blood': '#6B1D2F',
+                        'subtle-gold': '#D4AF37'
+                    },
+                    fontFamily: {
+                        serif: ['Cormorant Garamond', 'serif'],
+                        sans: ['Inter', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .fade-in { animation: fadeIn 1.2s ease-out forwards; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
+</head>
+<body class="bg-sacred-beige text-earth-brown font-sans min-h-screen flex flex-col justify-between selection:bg-wine-blood selection:text-white">
+
+    <header class="border-b border-earth-brown/10 py-6 px-4 backdrop-blur-sm sticky top-0 bg-sacred-beige/80 z-50">
+        <div class="max-w-4xl mx-auto flex justify-between items-center">
+            <a href="index.html" class="flex items-center gap-2 font-serif text-xl tracking-wide font-semibold text-wine-blood">
+                <svg class="w-5 h-7 fill-current text-wine-blood" viewBox="0 0 24 24">
+                    <path d="M11 2h2v6h6v2h-6v12h-2v-12h-6v-2h6z"/>
+                </svg>
+                <span>Devocional</span>
+            </a>
+            <nav class="flex gap-6 text-sm tracking-wider uppercase font-medium">
+                <a href="index.html" class="text-wine-blood border-b border-wine-blood pb-1">Início</a>
+                <a href="categorias.html" class="hover:text-wine-blood transition-colors pb-1">Categorias</a>
+                <a href="favoritos.html" class="hover:text-wine-blood transition-colors pb-1">Favoritos</a>
+            </nav>
+        </div>
+    </header>
+
+    <main class="flex-grow flex flex-col items-center justify-center px-6 py-12 max-w-2xl mx-auto text-center fade-in">
+        <div class="mb-12 text-earth-brown/20 hover:text-wine-blood/30 transition-colors duration-700">
+            <svg class="w-20 h-32 stroke-current stroke-1 fill-none" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 2v20M5 8h14" />
+            </svg>
+        </div>
+
+        <div id="versiculo-container" class="min-h-[180px] flex flex-col justify-center items-center">
+            <p id="versiculo-texto" class="font-serif italic text-2xl sm:text-3xl leading-relaxed text-earth-brown max-w-xl">
+                "Carregando palavra de vida..."
+            </p>
+            <span id="versiculo-ref" class="block mt-6 font-sans text-xs tracking-widest uppercase text-wine-blood font-semibold border-t border-subtle-gold/40 pt-2 min-w-[80px]">
+                ...
+            </span>
+        </div>
+
+        <button id="btn-novo" class="mt-16 group flex items-center gap-2 text-xs uppercase tracking-widest font-semibold text-earth-brown/70 hover:text-wine-blood transition-colors duration-300">
+            <span class="border-b border-transparent group-hover:border-wine-blood pb-0.5">Nova passagem</span>
+            <svg class="w-3 h-3 transform group-hover:rotate-180 transition-transform duration-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 1121.253 8H18" />
+            </svg>
+        </button>
+    </main>
+
+    <footer class="py-8 text-center text-xs tracking-wide text-earth-brown/40 font-light border-t border-earth-brown/5">
+        O Verbo se fez carne.
+    </footer>
+
+    <script>
+        let versiculos = [];
+
+        async function iniciar() {
+            try {
+                const resposta = await fetch('versiculos.json');
+                versiculos = await resposta.json();
+                exibirVersiculoAleatorio();
+            } catch (erro) {
+                console.error("Erro ao carregar dados sagrados:", erro);
+            }
+        }
+
+        function exibirVersiculoAleatorio() {
+            if(versiculos.length === 0) return;
+            const container = document.getElementById('versiculo-container');
+            
+            // Reinicia animação suave
+            container.classList.remove('fade-in');
+            void container.offsetWidth; 
+            container.classList.add('fade-in');
+
+            const indice = Math.floor(Math.random() * versiculos.length);
+            const escolhido = versiculos[indice];
+
+            document.getElementById('versiculo-texto').innerText = `"${escolhido.texto}"`;
+            document.getElementById('versiculo-ref').innerText = escolhido.referencia;
+        }
+
+        document.getElementById('btn-novo').addEventListener('click', exibirVersiculoAleatorio);
+        window.addEventListener('DOMContentLoaded', iniciar);
+    </script>
+</body>
+</html>
